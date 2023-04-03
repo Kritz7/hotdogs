@@ -2,7 +2,3 @@
 	path = Assets/_Common
 	url = https://github.com/Kritz7/Common
 	branch = main
-[submodule "Hotdogs/Assets/_Common"]
-	path = Hotdogs/Assets/_Common
-	url = https://github.com/Kritz7/hotdogs.git
-	branch = main
