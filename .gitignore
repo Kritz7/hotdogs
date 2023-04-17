@@ -62,3 +62,4 @@ crashlytics-build.properties
 /Hotdogs/Temp/*
 /Hotdogs/UserSettings/*
 /Hotdogs/Logs/*
+/Hotdogs/obj/Debug/*
