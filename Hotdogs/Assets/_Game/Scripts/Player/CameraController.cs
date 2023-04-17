@@ -19,6 +19,11 @@ public class CameraController : CinemachineExtension
         base.OnEnable();
 
         SetCursorLock(true);
+
+        initialRotation = transform.localRotation.eulerAngles;
+        currentRotation = initialRotation;
+
+        Debug.Log($"Initial rotation: {initialRotation}  _  {currentRotation}");
     }
 
     private void OnDisable()
@@ -54,17 +59,23 @@ public class CameraController : CinemachineExtension
         if (stage != CinemachineCore.Stage.Aim)
             return;
 
-        if(init == false)
+        if (Time.frameCount < 90)
+            return;
+
+        if(!init)
         {
-            initialRotation = transform.localRotation.eulerAngles;
-            currentRotation = initialRotation;
+            Camera.main.transform.localRotation = Quaternion.identity;
+            currentRotation = Vector3.zero;
             init = true;
+
+            state.RawOrientation = Quaternion.Euler(currentRotation);
+            Debug.Log($"Initial rotation: {state.RawOrientation}  _  {currentRotation}");
+            return;
         }
 
-
         Vector2 inputDelta = InputManager.Instance.GetLookDelta();
-        currentRotation.x += inputDelta.x * sensitivity.x * Time.deltaTime;
-        currentRotation.y += inputDelta.y * sensitivity.y * Time.deltaTime;
+        currentRotation.x += inputDelta.x * sensitivity.x * deltaTime;
+        currentRotation.y += inputDelta.y * sensitivity.y * deltaTime;
         currentRotation.y = Mathf.Clamp(currentRotation.y, yClamp.x, yClamp.y);
 
         state.RawOrientation = Quaternion.Euler(

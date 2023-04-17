@@ -6,7 +6,8 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("Player Config")]
-    [SerializeField] private Rigidbody pivotPhysics;
+    [SerializeField] private Rigidbody _rigidbody = null;
+    [SerializeField] private GameObject head = null;
 
     [Header("Temp Settings")]
     [SerializeField] private float movementForce = 400f;
@@ -23,40 +24,53 @@ public class PlayerController : MonoBehaviour
     }
     private Camera _mainCamera;
 
-    // Start is called before the first frame update
-    void Start()
+    private void OnValidate()
     {
-        pivotPhysics ??= transform.GetChild(0).GetComponent<Rigidbody>();
+        _rigidbody = GetComponent<Rigidbody>();
+        head = _rigidbody.transform.GetChild(0).gameObject;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        UpdatePivotRigidbody();
+        UpdatePlayerPosition();
     }
 
-    private void UpdatePivotRigidbody()
+    private void LateUpdate()
+    {
+        UpdateLookDirection();
+    }
+
+    private void UpdatePlayerPosition()
     {
         Vector3 inputDir = InputManager.Instance.GetMovement();
         inputDir.z = inputDir.y;
         inputDir.y = 0;
 
+        bool inputHeld = inputDir.magnitude > 0f;
         Vector3 localDirection =
             transform.forward * inputDir.z +
             mainCamera.transform.right * inputDir.x;
 
-        bool inputHeld = inputDir.magnitude > 0f;
+        _rigidbody.AddForce(movementForce * localDirection * Time.deltaTime);
 
-        pivotPhysics.AddForce(movementForce * localDirection * Time.deltaTime);
-
-        if (pivotPhysics.velocity.magnitude > maxForce)
+        if (_rigidbody.velocity.magnitude > maxForce)
         {
-            pivotPhysics.velocity = pivotPhysics.velocity.normalized * maxForce;
+            _rigidbody.velocity = _rigidbody.velocity.normalized * maxForce;
         }
 
         if (!inputHeld)
         {
-            pivotPhysics.velocity *= (1 - Time.deltaTime * movementDamping);
+            _rigidbody.velocity *= (1 - Time.deltaTime * movementDamping);
         }
+    }
+
+    private void UpdateLookDirection()
+    {
+        Vector3 lookDir = mainCamera.transform.forward;
+        Vector3 bodyDir = lookDir;
+        bodyDir.y = 0;
+
+        transform.LookAt(transform.position + bodyDir);
+        head.transform.LookAt(transform.position + mainCamera.transform.forward);
     }
 }
