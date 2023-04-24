@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class PlayerMovementModule : MonoBehaviour
 {
     [Header("Player Config")]
     [SerializeField] private Rigidbody _rigidbody = null;

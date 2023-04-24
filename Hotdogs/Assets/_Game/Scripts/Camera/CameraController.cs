@@ -11,6 +11,7 @@ public class CameraController : CinemachineExtension
     [SerializeField] private Vector2 yClamp = new Vector2(-85, 85);
 
     private bool init;
+    private int startupFamesCameraDelay = 90;
     private Vector3 initialRotation;
     private Vector3 currentRotation;
 
@@ -22,8 +23,6 @@ public class CameraController : CinemachineExtension
 
         initialRotation = transform.localRotation.eulerAngles;
         currentRotation = initialRotation;
-
-        Debug.Log($"Initial rotation: {initialRotation}  _  {currentRotation}");
     }
 
     private void OnDisable()
@@ -36,6 +35,11 @@ public class CameraController : CinemachineExtension
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             SetCursorLock(false);
+        }
+
+        if(Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            SetCursorLock(true);
         }
     }
 
@@ -59,17 +63,18 @@ public class CameraController : CinemachineExtension
         if (stage != CinemachineCore.Stage.Aim)
             return;
 
-        if (Time.frameCount < 90)
+        // Camera starts reading the moment you hit 'play' in editor causing weird behaviour.
+        if (Time.frameCount < startupFamesCameraDelay)
             return;
 
+        // Need access to `state` so have to perform some init here
         if(!init)
         {
             Camera.main.transform.localRotation = Quaternion.identity;
             currentRotation = Vector3.zero;
-            init = true;
 
             state.RawOrientation = Quaternion.Euler(currentRotation);
-            Debug.Log($"Initial rotation: {state.RawOrientation}  _  {currentRotation}");
+            init = true;
             return;
         }
 
