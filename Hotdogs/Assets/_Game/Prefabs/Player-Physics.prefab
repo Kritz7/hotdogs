@@ -278,6 +278,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6954621093113963357}
   - component: {fileID: 5488438097265374994}
+  - component: {fileID: 4836246023778033466}
+  - component: {fileID: 5726400881830090082}
   - component: {fileID: 6954621093113963346}
   - component: {fileID: 6954621093113963347}
   - component: {fileID: 6954621093113963356}
@@ -322,6 +324,34 @@ MonoBehaviour:
   movementForce: 1500
   movementDamping: 2
   maxForce: 5
+--- !u!114 &4836246023778033466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6954621093113963358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc0836bf7b7de434dab9a3eb8f1bf77c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handType: 1
+  handObject: {fileID: 0}
+--- !u!114 &5726400881830090082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6954621093113963358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc0836bf7b7de434dab9a3eb8f1bf77c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handType: 2
+  handObject: {fileID: 0}
 --- !u!33 &6954621093113963346
 MeshFilter:
   m_ObjectHideFlags: 0

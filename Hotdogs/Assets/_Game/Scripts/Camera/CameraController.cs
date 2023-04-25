@@ -46,7 +46,7 @@ public class CameraController : CinemachineExtension
     private void SetCursorLock(bool locked)
     {
         Cursor.lockState = locked ?
-            CursorLockMode.Confined :
+            CursorLockMode.Locked :
             CursorLockMode.None;
 
         Cursor.visible = !locked;
@@ -61,6 +61,9 @@ public class CameraController : CinemachineExtension
             return;
 
         if (stage != CinemachineCore.Stage.Aim)
+            return;
+
+        if (Cursor.lockState == CursorLockMode.None)
             return;
 
         // Camera starts reading the moment you hit 'play' in editor causing weird behaviour.
