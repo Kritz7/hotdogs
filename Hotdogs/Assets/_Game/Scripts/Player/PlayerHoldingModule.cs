@@ -76,7 +76,7 @@ public class PlayerHoldingModule : MonoBehaviour
         onHeld?.Invoke();
     }
 
-    public bool TryDrop(HandType hand, Action onDropSuccess)
+    public bool TryDrop(HandType hand, Action onDropSuccess = null)
     {
         if (heldCollection[hand] == null)
             return false;
@@ -86,7 +86,7 @@ public class PlayerHoldingModule : MonoBehaviour
         return true;
     }
 
-    public void Drop(HandType hand, Action onDropSuccess)
+    public void Drop(HandType hand, Action onDropSuccess = null)
     {
         heldCollection[hand].Drop(onDropSuccess);
         heldCollection[hand] = null;

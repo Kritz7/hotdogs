@@ -11,13 +11,20 @@ public class Item : MonoBehaviour, IHoldable
     public delegate void OnDropped();
     public event OnDropped onDropped = delegate { };
 
+    // There are multiple pathways to stack on additional action requests
+    private Action onHoldRequest;
+    private Action onDropFromHoldRequest;
+    private Action onDropRequest;
+
     private Rigidbody _rigidbody;
+    private int defaultLayer;
 
     public bool isHeld { get; protected set; }
 
     private void OnEnable()
     {
         _rigidbody = GetComponent<Rigidbody>();
+        defaultLayer = gameObject.layer;
 
         onHeld += OnHold;
         onDropped += OnDrop;
@@ -31,11 +38,15 @@ public class Item : MonoBehaviour, IHoldable
 
     public void Hold(Action onHold = null, Action onDrop = null)
     {
+        onHoldRequest = onHold;
+        onDropFromHoldRequest = onDrop;
+
         onHeld?.Invoke();
     }
 
     public void Drop(Action onDropSuccess = null)
     {
+        onDropRequest = onDropSuccess;
         onDropped?.Invoke();
     }
 
@@ -44,6 +55,10 @@ public class Item : MonoBehaviour, IHoldable
         _rigidbody.useGravity = false;
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
+
+        SetLayer(LayerMask.NameToLayer("PlayerHands"));
+
+        onHoldRequest?.Invoke();
 
         Debug.Log($"Held! {gameObject.name}");
     }
@@ -54,6 +69,19 @@ public class Item : MonoBehaviour, IHoldable
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
 
+        SetLayer(defaultLayer);
+
+        onDropFromHoldRequest?.Invoke();
+        onDropRequest?.Invoke();
+
         Debug.Log($"Dropped! {gameObject.name}");
+    }
+
+    private void SetLayer(int layer)
+    {
+        foreach(var renderer in GetComponentsInChildren<MeshRenderer>(true))
+        {
+            renderer.gameObject.layer = layer;
+        }
     }
 }

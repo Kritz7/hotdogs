@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 public static class CameraUtilities
 {
-    private static LayerMask inputIgnoreMask => ~(1 << LayerMask.NameToLayer("Player"));
+    private static LayerMask inputIgnoreMask => ~(1 << LayerMask.NameToLayer("Player") | 1 << LayerMask.NameToLayer("PlayerHands"));
 
     private static RaycastHit[] SteppedSphereRaycast(Vector3 origin, Vector3 direction, float distance, int steps, float sphereRadius)
     {
