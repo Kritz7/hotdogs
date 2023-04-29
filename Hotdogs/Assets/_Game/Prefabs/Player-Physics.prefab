@@ -26,8 +26,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5700570864693251293}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.7897}
-  m_LocalScale: {x: 0.50503, y: 0.50503, z: 2.0845113}
+  m_LocalPosition: {x: 0, y: 0, z: 0.3326}
+  m_LocalScale: {x: 0.50503, y: 0.50503, z: 1.1702446}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6954621092953994956}
@@ -277,7 +277,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6954621093113963357}
+  - component: {fileID: 5505760263373870850}
   - component: {fileID: 5488438097265374994}
+  - component: {fileID: 4656612643599630495}
   - component: {fileID: 4836246023778033466}
   - component: {fileID: 5726400881830090082}
   - component: {fileID: 6954621093113963346}
@@ -307,6 +309,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5505760263373870850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6954621093113963358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eebc1efda9ec4684d9e4ba5078f9ba5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftHandModule: {fileID: 4836246023778033466}
+  rightHandModule: {fileID: 5726400881830090082}
+  holdingModule: {fileID: 4656612643599630495}
+  movementModule: {fileID: 5488438097265374994}
 --- !u!114 &5488438097265374994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,6 +342,18 @@ MonoBehaviour:
   movementForce: 1500
   movementDamping: 2
   maxForce: 5
+--- !u!114 &4656612643599630495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6954621093113963358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 998db2316832ba943a3e0048255699ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &4836246023778033466
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,7 +367,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   handType: 1
+  handMovementSpeed: 20
   handObject: {fileID: 0}
+  handDistanceOffset:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.9
+      outSlope: -0.9
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.1
+      inSlope: -0.9
+      outSlope: -0.9
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &5726400881830090082
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,7 +406,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   handType: 2
+  handMovementSpeed: 20
   handObject: {fileID: 0}
+  handDistanceOffset:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.9
+      outSlope: -0.9
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.1
+      inSlope: -0.9
+      outSlope: -0.9
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!33 &6954621093113963346
 MeshFilter:
   m_ObjectHideFlags: 0

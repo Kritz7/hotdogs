@@ -6,18 +6,28 @@ using DG.Tweening;
 
 public class PlayerHandModule : MonoBehaviour
 {
-    [SerializeField] private HandType handType;
+    [SerializeField, UnityEngine.Serialization.FormerlySerializedAs("handType")] private HandType hand;
+    [SerializeField] private float handMovementSpeed = 10f;
+    [SerializeField] private float defaultHandDistance = 2f;
     [SerializeField] private GameObject handObject;
     [SerializeField] private AnimationCurve handDistanceOffset;
 
-    private LineRenderer handLine => _handLine ??= handObject.GetComponent<LineRenderer>();
     private LineRenderer _handLine;
-
     private Sequence handMoveSequence;
+    private Vector3 goalMovePosition;
     private bool slappy = false;
-    private float stickDistance = 0.5f;
+    private float contactDistance = 0.5f;
 
-    private bool InStickingDistance(Vector3 position) => Vector3.Distance(handObject.transform.position, position) < stickDistance;
+    public HandType Hand => hand;
+    public Vector3 HandPosition => goalMovePosition;
+    public bool WithinContactDistance(Vector3 position) => Vector3.Distance(handObject.transform.position, position) < contactDistance;
+
+
+    private bool isHolding => Player.Main.Holding.isHolding(Hand);
+    private LineRenderer handLine => _handLine ??= handObject.GetComponent<LineRenderer>();
+
+
+    #region Unity Lifecycle
 
     private void OnEnable()
     {
@@ -27,6 +37,50 @@ public class PlayerHandModule : MonoBehaviour
     private void OnDisable()
     {
         UnassignListeners();
+    }
+
+    #endregion
+
+    #region Listeners
+
+    private void AssignListeners()
+    {
+        if (hand == HandType.Left)
+        {
+            InputManager.Instance.onLeftClickPressed += OnInputPressed;
+            InputManager.Instance.onLeftClickReleased += OnInputReleased;
+            InputManager.Instance.onLeftClickHeld += OnInputHeld;
+        }
+        if (hand == HandType.Right)
+        {
+            InputManager.Instance.onRightClickPressed += OnInputPressed;
+            InputManager.Instance.onRightClickReleased += OnInputReleased;
+            InputManager.Instance.onRightClickHeld += OnInputHeld;
+        }
+    }
+
+    private void UnassignListeners()
+    {
+        if (hand == HandType.Left)
+        {
+            InputManager.Instance.onLeftClickPressed -= OnInputPressed;
+            InputManager.Instance.onLeftClickReleased -= OnInputReleased;
+            InputManager.Instance.onLeftClickHeld -= OnInputHeld;
+        }
+        if (hand == HandType.Right)
+        {
+            InputManager.Instance.onRightClickPressed -= OnInputPressed;
+            InputManager.Instance.onRightClickReleased -= OnInputReleased;
+            InputManager.Instance.onRightClickHeld -= OnInputHeld;
+        }
+    }
+
+    #endregion
+
+
+    private void Update()
+    {
+        handObject.transform.position = Vector3.Lerp(handObject.transform.position, goalMovePosition, handMovementSpeed * Time.deltaTime);
     }
 
     private void LateUpdate()
@@ -40,72 +94,79 @@ public class PlayerHandModule : MonoBehaviour
             });
         }
     }
-    private void AssignListeners()
-    {
-        if (handType == HandType.Left)
-        {
-            InputManager.Instance.onLeftClickPressed += OnInputPressed;
-            InputManager.Instance.onLeftClickReleased += OnInputReleased;
-            InputManager.Instance.onLeftClickHeld += OnInputHeld;
-        }
-        if (handType == HandType.Right)
-        {
-            InputManager.Instance.onRightClickPressed += OnInputPressed;
-            InputManager.Instance.onRightClickReleased += OnInputReleased;
-            InputManager.Instance.onRightClickHeld += OnInputHeld;
-        }
-    }
-
-    private void UnassignListeners()
-    {
-        if (handType == HandType.Left)
-        {
-            InputManager.Instance.onLeftClickPressed -= OnInputPressed;
-            InputManager.Instance.onLeftClickReleased -= OnInputReleased;
-            InputManager.Instance.onLeftClickHeld -= OnInputHeld;
-        }
-        if (handType == HandType.Right)
-        {
-            InputManager.Instance.onRightClickPressed -= OnInputPressed;
-            InputManager.Instance.onRightClickReleased -= OnInputReleased;
-            InputManager.Instance.onRightClickHeld -= OnInputHeld;
-        }
-    }
 
     private void OnInputHeld(InputManager.InputContext context)
     {
         if (handMoveSequence != null && !handMoveSequence.IsActive())
             return;
 
-        if (context.Valid && InStickingDistance(context.First.point) && slappy == false)
+        if(!isHolding)
         {
-            slappy = true;
-            SoundManager.PlayInteractionSFX();
+            TryPlaySlap(context);
+
+            if(Player.Main.Holding.TryHold(Hand, context))
+            {
+                PlaySlap();
+                handMoveSequence.Kill();
+            }
         }
 
-        if(!context.Valid)
-        {
-            slappy = false;
-        }
+        bool defaultHandPos = !context.Valid || isHolding;
 
-        Vector3 movePosition = context.Valid ? context.First.point : GetDefaultHandEndPosition(2f);
-
-        handObject.transform.position = Vector3.Lerp(handObject.transform.position, movePosition, 10 * Time.deltaTime);
+        goalMovePosition = defaultHandPos ? GetDefaultHandEndPosition(defaultHandDistance) : context.First.point;
     }
 
     private void OnInputReleased(InputManager.InputContext context)
     {
-        slappy = false;
+        Player.Main.Holding.TryDrop(Hand);
 
-        if (handMoveSequence != null)
+        ResetSlapTrigger();
+        AnimateHandOut();
+    }
+
+    private void OnInputPressed(InputManager.InputContext context)
+    {
+        if(Player.Main.Holding.TryHold(Hand, context))
         {
-            handMoveSequence.Kill();
+            PlaySlap();
         }
+
+        bool defaultHandPos = !context.Valid || isHolding;
+
+        AnimateHandIn(defaultHandPos ? GetDefaultHandEndPosition(defaultHandDistance) : context.First.point);
+    }
+
+    private void TryPlaySlap(InputManager.InputContext context)
+    {
+        if (context.Valid && WithinContactDistance(context.First.point) && slappy == false)
+        {
+            slappy = true;
+            PlaySlap();
+        }
+
+        if (!context.Valid)
+            slappy = false;
+    }
+
+    private void PlaySlap()
+    {
+        SoundManager.PlayInteractionSFX();
+    }
+
+    private void ResetSlapTrigger()
+    {
+        slappy = false;
+    }
+
+    private void AnimateHandOut()
+    {
+        if (handMoveSequence != null)
+            handMoveSequence.Kill();
 
         handMoveSequence = DOTween.Sequence();
         handMoveSequence.Append(DOTween.To(
             () => handObject.transform.position,
-            (x) => handObject.transform.position = x,
+            (x) => goalMovePosition = x,
             GetHandStartPos(), 0.2f).SetEase(Ease.OutSine));
 
         handMoveSequence.OnKill(() =>
@@ -115,25 +176,21 @@ public class PlayerHandModule : MonoBehaviour
         });
     }
 
-    private void OnInputPressed(InputManager.InputContext context)
+    private void AnimateHandIn(Vector3 movePosition)
     {
-        if(handMoveSequence != null)
-        {
+        if (handMoveSequence != null)
             handMoveSequence.Kill();
-        }
-
-        Vector3 movePosition = context.Valid ? context.First.point : GetDefaultHandEndPosition(2f);
 
         handMoveSequence = DOTween.Sequence();
         handMoveSequence.OnStart(() =>
         {
             handObject.gameObject.SetActive(true);
-            handObject.transform.position = GetHandStartPos();
+            goalMovePosition = GetHandStartPos();
         });
 
         handMoveSequence.Append(DOTween.To(
             () => handObject.transform.position,
-            (x) => handObject.transform.position = x,
+            (x) => goalMovePosition = x,
             movePosition, 0.1f).SetEase(Ease.OutSine));
 
         handMoveSequence.OnKill(() => handMoveSequence = null);
@@ -141,7 +198,7 @@ public class PlayerHandModule : MonoBehaviour
 
     private Vector3 GetHandStartPos()
     {
-        Vector3 offset = handType switch
+        Vector3 offset = hand switch
         {
             HandType.Left => -transform.right,
             HandType.Right => transform.right,
@@ -154,8 +211,9 @@ public class PlayerHandModule : MonoBehaviour
 
     private Vector3 GetDefaultHandEndPosition(float distance)
     {
-        Vector3 forwardOffset = transform.forward * distance;
-        Vector3 perpendicularOffset = handType switch
+        Vector3 forwardOffset = Camera.main.transform.forward * distance;
+        Vector3 verticalOffset = Vector3.up;
+        Vector3 perpendicularOffset = hand switch
         {
             HandType.Left => -transform.right,
             HandType.Right => transform.right,
@@ -163,9 +221,9 @@ public class PlayerHandModule : MonoBehaviour
             _ => throw new System.NotImplementedException()
         };
 
-        perpendicularOffset = handDistanceOffset.Clerp(perpendicularOffset, Vector3.zero, distance);
+        perpendicularOffset = perpendicularOffset * 0.5f;
 
-        return transform.position + perpendicularOffset + forwardOffset;
+        return transform.position + perpendicularOffset + forwardOffset + verticalOffset;
     }
 
     public enum HandType
