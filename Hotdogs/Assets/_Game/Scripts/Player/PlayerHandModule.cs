@@ -8,7 +8,7 @@ public class PlayerHandModule : MonoBehaviour
 {
     [SerializeField, UnityEngine.Serialization.FormerlySerializedAs("handType")] private HandType hand;
     [SerializeField] private float handMovementSpeed = 10f;
-    [SerializeField] private float defaultHandDistance = 2f;
+    [SerializeField] private float defaultHandDistance = 1f;
     [SerializeField] private GameObject handObject;
     [SerializeField] private AnimationCurve handDistanceOffset;
 
@@ -95,8 +95,10 @@ public class PlayerHandModule : MonoBehaviour
         }
     }
 
-    private void OnInputHeld(InputManager.InputContext context)
+    private void OnInputHeld()
     {
+        InputContext context = new InputContext(this);
+
         if (handMoveSequence != null && !handMoveSequence.IsActive())
             return;
 
@@ -116,17 +118,20 @@ public class PlayerHandModule : MonoBehaviour
         goalMovePosition = defaultHandPos ? GetDefaultHandEndPosition(defaultHandDistance) : context.First.point;
     }
 
-    private void OnInputReleased(InputManager.InputContext context)
+    private void OnInputReleased()
     {
+        InputContext context = new InputContext(this);
         Player.Main.Holding.TryDrop(Hand);
 
         ResetSlapTrigger();
         AnimateHandOut();
     }
 
-    private void OnInputPressed(InputManager.InputContext context)
+    private void OnInputPressed()
     {
-        if(Player.Main.Holding.TryHold(Hand, context))
+        InputContext context = new InputContext(this);
+
+        if (Player.Main.Holding.TryHold(Hand, context))
         {
             PlaySlap();
         }
@@ -136,7 +141,7 @@ public class PlayerHandModule : MonoBehaviour
         AnimateHandIn(defaultHandPos ? GetDefaultHandEndPosition(defaultHandDistance) : context.First.point);
     }
 
-    private void TryPlaySlap(InputManager.InputContext context)
+    private void TryPlaySlap(InputContext context)
     {
         if (context.Valid && WithinContactDistance(context.First.point) && slappy == false)
         {
@@ -196,7 +201,7 @@ public class PlayerHandModule : MonoBehaviour
         handMoveSequence.OnKill(() => handMoveSequence = null);
     }
 
-    private Vector3 GetHandStartPos()
+    protected Vector3 GetHandStartPos()
     {
         Vector3 offset = hand switch
         {
@@ -206,10 +211,13 @@ public class PlayerHandModule : MonoBehaviour
             _ => throw new System.NotImplementedException()
         };
 
-        return transform.position + offset;
+        offset *= 0.8f;
+        Vector3 verticalOffset = Vector3.up;
+
+        return transform.position + offset + verticalOffset;
     }
 
-    private Vector3 GetDefaultHandEndPosition(float distance)
+    protected Vector3 GetDefaultHandEndPosition(float distance)
     {
         Vector3 forwardOffset = Camera.main.transform.forward * distance;
         Vector3 verticalOffset = Vector3.up;
@@ -224,6 +232,23 @@ public class PlayerHandModule : MonoBehaviour
         perpendicularOffset = perpendicularOffset * 0.5f;
 
         return transform.position + perpendicularOffset + forwardOffset + verticalOffset;
+    }
+    public class InputContext
+    {
+        public RaycastHit[] Hits = null;
+        public bool Valid => Hits != null && Hits.Length > 0;
+        public RaycastHit First => Valid ? Hits[0] : new RaycastHit();
+
+        public InputContext(Vector3 origin, Vector3 direction, float distance)
+        {
+            Hits = CameraUtilities.SteppedSpherecast(origin, direction, distance);
+        }
+
+        public InputContext(PlayerHandModule hand)
+        {
+            Vector3 handDirection = (hand.GetDefaultHandEndPosition(hand.defaultHandDistance) - hand.GetHandStartPos()).normalized;
+            Hits = CameraUtilities.SteppedSpherecast(hand.GetHandStartPos(), handDirection, hand.defaultHandDistance);
+        }
     }
 
     public enum HandType

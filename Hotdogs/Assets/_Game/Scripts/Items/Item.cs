@@ -59,8 +59,6 @@ public class Item : MonoBehaviour, IHoldable
         SetLayer(LayerMask.NameToLayer("PlayerHands"));
 
         onHoldRequest?.Invoke();
-
-        Debug.Log($"Held! {gameObject.name}");
     }
 
     public void OnDrop()
@@ -73,8 +71,6 @@ public class Item : MonoBehaviour, IHoldable
 
         onDropFromHoldRequest?.Invoke();
         onDropRequest?.Invoke();
-
-        Debug.Log($"Dropped! {gameObject.name}");
     }
 
     private void SetLayer(int layer)

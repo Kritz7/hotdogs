@@ -40,7 +40,7 @@ public class PlayerHoldingModule : MonoBehaviour
         item.transform.position = handModule.HandPosition;
     }
 
-    public bool TryHold(HandType hand, InputManager.InputContext context, Action onHeld = null, Action onDropped = null)
+    public bool TryHold(HandType hand, PlayerHandModule.InputContext context, Action onHeld = null, Action onDropped = null)
     {
         if (!context.Valid)
             return false;

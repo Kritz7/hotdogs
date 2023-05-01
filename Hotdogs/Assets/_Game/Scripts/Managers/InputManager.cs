@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class InputManager : MonoSingleton<InputManager>
 {
-    public delegate void OnPress(InputContext context);
+    public delegate void OnPress();
     public event OnPress onLeftClickPressed = delegate { };
     public event OnPress onLeftClickReleased = delegate { };
     public event OnPress onLeftClickHeld = delegate { };
@@ -75,19 +75,6 @@ public class InputManager : MonoSingleton<InputManager>
 
     private void ClickPerformed(OnPress callback)
     {
-        InputContext context = new InputContext(CameraUtilities.SteppedSpherecast());
-        callback?.Invoke(context);
-    }
-
-    public class InputContext
-    {
-        public RaycastHit[] Hits = null;
-        public bool Valid => Hits != null && Hits.Length > 0;
-        public RaycastHit First => Valid ? Hits[0] : new RaycastHit();
-
-        public InputContext(RaycastHit[] hits)
-        {
-            Hits = hits;
-        }
+        callback?.Invoke();
     }
 }
