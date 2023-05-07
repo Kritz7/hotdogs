@@ -15,9 +15,9 @@ public class InputManager : MonoSingleton<InputManager>
 
     private PlayerControls controls;
 
-    protected override void Awake()
+    protected override void Instantiate()
     {
-        base.Awake();
+        base.Instantiate();
 
         controls ??= new PlayerControls();
     }

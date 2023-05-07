@@ -22,7 +22,7 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     }
     public static bool Exists => instance != null;
 
-    protected virtual void Awake()
+    private void Awake()
     {
         if (instance == null)
         {
@@ -33,5 +33,9 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        Instantiate();
     }
+
+    protected virtual void Instantiate() { }
 }

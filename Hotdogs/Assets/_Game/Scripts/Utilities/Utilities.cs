@@ -25,4 +25,11 @@ public static class DogUtilities
     {
         return Mathf.Lerp(start, end, curve.Evaluate(t));
     }
+
+    public static Vector3 GetBezierPoint(Vector3 start, Vector3 end, Vector3 controlPoint, float t)
+    {
+        t = Mathf.Clamp01(t);
+        float oneMinusT = 1f - t;
+        return oneMinusT * oneMinusT * start + 2f * oneMinusT * t * controlPoint + t * t * end;
+    }
 }

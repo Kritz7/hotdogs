@@ -14,7 +14,7 @@ public class PlayerHoldingModule : MonoBehaviour
 
     private void Awake()
     {
-        heldCollection = new Dictionary<HandType, IHoldable>
+        heldCollection = new()
         {
             { HandType.Left, null },
             { HandType.Right, null }
@@ -36,8 +36,9 @@ public class PlayerHoldingModule : MonoBehaviour
     {
         Item item = (Item)holdable;
         PlayerHandModule handModule = Player.Main.GetHand(hand);
+        Vector3 holdOffset = handModule.transform.forward * 0.4f;
 
-        item.transform.position = handModule.HandPosition;
+        item.SetPosition(handModule.HandPosition + holdOffset, handModule.transform.forward);
     }
 
     public bool TryHold(HandType hand, PlayerHandModule.InputContext context, Action onHeld = null, Action onDropped = null)
@@ -58,6 +59,7 @@ public class PlayerHoldingModule : MonoBehaviour
             if (!handModule.WithinContactDistance(((Item)holdable).transform.position))
                 continue;
 
+            Debug.Log("Holdin'!");
             Hold(hand, holdable, onHeld, onDropped);
             break;
         }
@@ -88,6 +90,8 @@ public class PlayerHoldingModule : MonoBehaviour
 
     public void Drop(HandType hand, Action onDropSuccess = null)
     {
+        Debug.Log($"Dropping {((Item)heldCollection[hand]).name}");
+
         heldCollection[hand].Drop(onDropSuccess);
         heldCollection[hand] = null;
     }

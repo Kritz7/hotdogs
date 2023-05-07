@@ -16,12 +16,11 @@ public class PlayerHandModule : MonoBehaviour
     private Sequence handMoveSequence;
     private Vector3 goalMovePosition;
     private bool slappy = false;
-    private float contactDistance = 0.5f;
+    private float contactDistance = 0.4f;
 
     public HandType Hand => hand;
     public Vector3 HandPosition => goalMovePosition;
     public bool WithinContactDistance(Vector3 position) => Vector3.Distance(handObject.transform.position, position) < contactDistance;
-
 
     private bool isHolding => Player.Main.Holding.isHolding(Hand);
     private LineRenderer handLine => _handLine ??= handObject.GetComponent<LineRenderer>();
@@ -235,19 +234,59 @@ public class PlayerHandModule : MonoBehaviour
     }
     public class InputContext
     {
-        public RaycastHit[] Hits = null;
-        public bool Valid => Hits != null && Hits.Length > 0;
+        public List<RaycastHit> Hits = new List<RaycastHit>();
+        public bool Valid => Hits != null && Hits.Count > 0;
         public RaycastHit First => Valid ? Hits[0] : new RaycastHit();
 
         public InputContext(Vector3 origin, Vector3 direction, float distance)
         {
-            Hits = CameraUtilities.SteppedSpherecast(origin, direction, distance);
+            Hits = CameraUtilities.SteppedSpherecast(origin, direction, distance).ToList();
         }
 
-        public InputContext(PlayerHandModule hand)
+        public InputContext(PlayerHandModule hand, bool allowDebugging = false)
         {
             Vector3 handDirection = (hand.GetDefaultHandEndPosition(hand.defaultHandDistance) - hand.GetHandStartPos()).normalized;
-            Hits = CameraUtilities.SteppedSpherecast(hand.GetHandStartPos(), handDirection, hand.defaultHandDistance);
+            float screenOffsetPercent = hand.hand == HandType.Left ? 0.4f : 0.6f;
+            float screenCloseOffsetPercent = hand.hand == HandType.Left ? 0.45f : 0.55f;
+            float screenFarOffsetPercent = hand.hand == HandType.Left ? 0.3333f : 0.6667f;
+
+            Hits = new List<RaycastHit>();
+            Hits.AddRange(CameraUtilities.SteppedSpherecastFromScreenCentre(hand.defaultHandDistance * 0.8f));
+            Hits.AddRange(CameraUtilities.SteppedSpherecastFromScreen(hand.defaultHandDistance, screenOffsetPercent));
+            Hits.AddRange(CameraUtilities.SteppedSpherecastFromScreen(hand.defaultHandDistance, screenCloseOffsetPercent));
+
+            if(Hits.Count == 0)
+                Hits.AddRange(CameraUtilities.SteppedSpherecastFromScreen(hand.defaultHandDistance, screenFarOffsetPercent));
+
+            if (Hits.Count == 0)
+                Hits.AddRange(CameraUtilities.SteppedSpherecast(hand.GetHandStartPos(), handDirection, hand.defaultHandDistance, screenOffsetPercent));
+
+            Hits = Hits.Where(x => x.distance > 0.01f).ToList();
+
+            // Sort the hits based on distance then by item
+            int itemsHit = Hits.Count((x) => x.transform.GetComponentInParent<IHoldable>() != null);
+
+            if(itemsHit > 0)
+            {
+                Hits = Hits.OrderBy(x => x.transform.GetComponentInParent<IHoldable>() == null).ToList();
+            }
+            else
+            {
+                Hits = Hits.OrderBy(x => x.distance).ToList();
+            }
+
+            if (allowDebugging)
+            {
+                Color randColor = Random.ColorHSV();
+                string output = "";
+                for (int i = 0; i < Hits.Count; i++)
+                {
+                    output += $"{i}_{Hits[i].transform.name} {Hits[i].distance}, ";
+                    WorldDebugHelper.ShowText(Hits[i].point, $"{i}_{Hits[i].transform.name}", 5f, randColor);
+                }
+
+                Debug.Log(output);
+            }
         }
     }
 
