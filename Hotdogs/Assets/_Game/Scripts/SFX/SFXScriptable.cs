@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-[CreateAssetMenu(fileName = "New SFX Item", menuName = "HotDogs/SFX/SFX Item")]
-public class SFXScriptable : ScriptableObject
+namespace HotDogs.HDSound
 {
-    [SerializeField] private AudioClip clip;
+    [CreateAssetMenu(fileName = "New SFX Item", menuName = "HotDogs/SFX/SFX Item")]
+    public class SFXScriptable : ScriptableObject
+    {
+        [SerializeField] private AudioClip clip;
 
-    public AudioClip Clip => clip;
+        public AudioClip Clip => clip;
+    }
 }

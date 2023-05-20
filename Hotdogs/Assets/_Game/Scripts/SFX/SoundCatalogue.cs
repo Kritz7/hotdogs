@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using HotDogs.HDUtils;
 
-[CreateAssetMenu(fileName = "New SFX Catalogue", menuName = "HotDogs/SFX/SFX Catalogue")]
-public class SoundCatalogue : ScriptableObject
+namespace HotDogs.HDSound
 {
-    [SerializeField] private List<SFXScriptable> InteractSFX;
+    [CreateAssetMenu(fileName = "New SFX Catalogue", menuName = "HotDogs/SFX/SFX Catalogue")]
+    public class SoundCatalogue : ScriptableObject
+    {
+        [SerializeField] private List<SFXScriptable> InteractSFX;
 
-    public AudioClip GetRandomClip => InteractSFX.GetRandom().Clip;
+        public AudioClip GetRandomClip => InteractSFX.GetRandom().Clip;
+    }
 }

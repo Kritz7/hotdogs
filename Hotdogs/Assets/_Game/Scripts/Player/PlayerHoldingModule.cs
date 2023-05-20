@@ -3,96 +3,99 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-using HandType = PlayerHandModule.HandType;
+using HandType = HotDogs.PlayerHandModule.HandType;
 
-public class PlayerHoldingModule : MonoBehaviour
+namespace HotDogs
 {
-    private Dictionary<HandType, IHoldable> heldCollection;
-
-    public IHoldable Holding(HandType hand) => heldCollection[hand];
-    public bool isHolding(HandType hand) => heldCollection[hand] != null;
-
-    private void Awake()
+    public class PlayerHoldingModule : MonoBehaviour
     {
-        heldCollection = new()
-        {
-            { HandType.Left, null },
-            { HandType.Right, null }
-        };
-    }
+        private Dictionary<HandType, IHoldable> heldCollection;
 
-    private void Update()
-    {
-        foreach(var hand in heldCollection)
-        {
-            if (hand.Value == null)
-                continue;
+        public IHoldable Holding(HandType hand) => heldCollection[hand];
+        public bool isHolding(HandType hand) => heldCollection[hand] != null;
 
-            UpdatePosition(hand.Key, heldCollection[hand.Key]);
+        private void Awake()
+        {
+            heldCollection = new()
+            {
+                { HandType.Left, null },
+                { HandType.Right, null }
+            };
         }
-    }
 
-    private void UpdatePosition(HandType hand, IHoldable holdable)
-    {
-        Item item = (Item)holdable;
-        PlayerHandModule handModule = Player.Main.GetHand(hand);
-        Vector3 holdOffset = handModule.transform.forward * 0.4f;
-
-        item.SetPosition(handModule.HandPosition + holdOffset, handModule.transform.forward);
-    }
-
-    public bool TryHold(HandType hand, PlayerHandModule.InputContext context, Action onHeld = null, Action onDropped = null)
-    {
-        if (!context.Valid)
-            return false;
-
-        if (heldCollection[hand] != null)
-            return false;
-
-        foreach (var hit in context.Hits)
+        private void Update()
         {
-            if (hit.collider.GetComponentInParent<IHoldable>() is not IHoldable holdable)
-                continue;
+            foreach (var hand in heldCollection)
+            {
+                if (hand.Value == null)
+                    continue;
 
+                UpdatePosition(hand.Key, heldCollection[hand.Key]);
+            }
+        }
+
+        private void UpdatePosition(HandType hand, IHoldable holdable)
+        {
+            Item item = (Item)holdable;
             PlayerHandModule handModule = Player.Main.GetHand(hand);
+            Vector3 holdOffset = handModule.transform.forward * 0.4f;
 
-            if (!handModule.WithinContactDistance(((Item)holdable).transform.position))
-                continue;
-
-            Debug.Log("Holdin'!");
-            Hold(hand, holdable, onHeld, onDropped);
-            break;
+            item.SetPosition(handModule.HandPosition + holdOffset, handModule.transform.forward);
         }
 
-        return heldCollection[hand] != null;
-    }
+        public bool TryHold(HandType hand, PlayerHandModule.InputContext context, Action onHeld = null, Action onDropped = null)
+        {
+            if (!context.Valid)
+                return false;
 
-    public void Hold(HandType hand, IHoldable holdable, Action onHeld = null, Action onDrop = null)
-    {
-        if (heldCollection[hand] != null)
-            Debug.LogError($"{hand} cannot hold {holdable}! Already holding {heldCollection[hand]}!");
+            if (heldCollection[hand] != null)
+                return false;
 
-        heldCollection[hand] = holdable;
-        holdable.Hold(onHeld, onDrop);
+            foreach (var hit in context.Hits)
+            {
+                if (hit.collider.GetComponentInParent<IHoldable>() is not IHoldable holdable)
+                    continue;
 
-        onHeld?.Invoke();
-    }
+                PlayerHandModule handModule = Player.Main.GetHand(hand);
 
-    public bool TryDrop(HandType hand, Action onDropSuccess = null)
-    {
-        if (heldCollection[hand] == null)
-            return false;
+                if (!handModule.WithinContactDistance(((Item)holdable).transform.position))
+                    continue;
 
-        Drop(hand, onDropSuccess);
+                Debug.Log("Holdin'!");
+                Hold(hand, holdable, onHeld, onDropped);
+                break;
+            }
 
-        return true;
-    }
+            return heldCollection[hand] != null;
+        }
 
-    public void Drop(HandType hand, Action onDropSuccess = null)
-    {
-        Debug.Log($"Dropping {((Item)heldCollection[hand]).name}");
+        public void Hold(HandType hand, IHoldable holdable, Action onHeld = null, Action onDrop = null)
+        {
+            if (heldCollection[hand] != null)
+                Debug.LogError($"{hand} cannot hold {holdable}! Already holding {heldCollection[hand]}!");
 
-        heldCollection[hand].Drop(onDropSuccess);
-        heldCollection[hand] = null;
+            heldCollection[hand] = holdable;
+            holdable.Hold(onHeld, onDrop);
+
+            onHeld?.Invoke();
+        }
+
+        public bool TryDrop(HandType hand, Action onDropSuccess = null)
+        {
+            if (heldCollection[hand] == null)
+                return false;
+
+            Drop(hand, onDropSuccess);
+
+            return true;
+        }
+
+        public void Drop(HandType hand, Action onDropSuccess = null)
+        {
+            Debug.Log($"Dropping {((Item)heldCollection[hand]).name}");
+
+            heldCollection[hand].Drop(onDropSuccess);
+            heldCollection[hand] = null;
+        }
     }
 }

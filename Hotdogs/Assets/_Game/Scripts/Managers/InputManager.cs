@@ -3,78 +3,81 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class InputManager : MonoSingleton<InputManager>
+namespace HotDogs.HDInput
 {
-    public delegate void OnPress();
-    public event OnPress onLeftClickPressed = delegate { };
-    public event OnPress onLeftClickReleased = delegate { };
-    public event OnPress onLeftClickHeld = delegate { };
-    public event OnPress onRightClickPressed = delegate { };
-    public event OnPress onRightClickReleased = delegate { };
-    public event OnPress onRightClickHeld = delegate { };
-
-    private PlayerControls controls;
-
-    protected override void Instantiate()
+    public class InputManager : MonoSingleton<InputManager>
     {
-        base.Instantiate();
+        public delegate void OnPress();
+        public event OnPress onLeftClickPressed = delegate { };
+        public event OnPress onLeftClickReleased = delegate { };
+        public event OnPress onLeftClickHeld = delegate { };
+        public event OnPress onRightClickPressed = delegate { };
+        public event OnPress onRightClickReleased = delegate { };
+        public event OnPress onRightClickHeld = delegate { };
 
-        controls ??= new PlayerControls();
-    }
+        private PlayerControls controls;
 
-    private void OnEnable()
-    {
-        controls.Enable();
-
-        controls.Player.LeftClick.started += (_) => ClickPerformed(onLeftClickPressed);
-        controls.Player.LeftClick.canceled += (_) => ClickPerformed(onLeftClickReleased);
-
-        controls.Player.RightClick.started += (_) => ClickPerformed(onRightClickPressed);
-        controls.Player.RightClick.canceled += (_) => ClickPerformed(onRightClickReleased);
-    }
-
-    private void OnDisable()
-    {
-        controls.Player.LeftClick.started -= (_) => ClickPerformed(onLeftClickPressed);
-        controls.Player.LeftClick.canceled -= (_) => ClickPerformed(onLeftClickReleased);
-
-        controls.Player.RightClick.started -= (_) => ClickPerformed(onRightClickPressed);
-        controls.Player.RightClick.canceled -= (_) => ClickPerformed(onRightClickReleased);
-
-        controls.Disable();
-    }
-
-    private void Update()
-    {
-        if(controls.Player.LeftClick.IsPressed())
+        protected override void Instantiate()
         {
-            ClickPerformed(onLeftClickHeld);
+            base.Instantiate();
+
+            controls ??= new PlayerControls();
         }
 
-        if (controls.Player.RightClick.IsPressed())
+        private void OnEnable()
         {
-            ClickPerformed(onRightClickHeld);
+            controls.Enable();
+
+            controls.Player.LeftClick.started += (_) => ClickPerformed(onLeftClickPressed);
+            controls.Player.LeftClick.canceled += (_) => ClickPerformed(onLeftClickReleased);
+
+            controls.Player.RightClick.started += (_) => ClickPerformed(onRightClickPressed);
+            controls.Player.RightClick.canceled += (_) => ClickPerformed(onRightClickReleased);
         }
-    }
 
-    public Vector2 GetLookDelta()
-    {
-        if (!Application.isPlaying)
-            return Vector2.zero;
+        private void OnDisable()
+        {
+            controls.Player.LeftClick.started -= (_) => ClickPerformed(onLeftClickPressed);
+            controls.Player.LeftClick.canceled -= (_) => ClickPerformed(onLeftClickReleased);
 
-        if (controls == null || controls.Player.Look == null)
-            return Vector2.zero;
+            controls.Player.RightClick.started -= (_) => ClickPerformed(onRightClickPressed);
+            controls.Player.RightClick.canceled -= (_) => ClickPerformed(onRightClickReleased);
 
-        return controls.Player.Look.ReadValue<Vector2>();
-    }
+            controls.Disable();
+        }
 
-    public Vector2 GetMovement()
-    {
-        return controls.Player.Movement.ReadValue<Vector2>();
-    }
+        private void Update()
+        {
+            if (controls.Player.LeftClick.IsPressed())
+            {
+                ClickPerformed(onLeftClickHeld);
+            }
 
-    private void ClickPerformed(OnPress callback)
-    {
-        callback?.Invoke();
+            if (controls.Player.RightClick.IsPressed())
+            {
+                ClickPerformed(onRightClickHeld);
+            }
+        }
+
+        public Vector2 GetLookDelta()
+        {
+            if (!Application.isPlaying)
+                return Vector2.zero;
+
+            if (controls == null || controls.Player.Look == null)
+                return Vector2.zero;
+
+            return controls.Player.Look.ReadValue<Vector2>();
+        }
+
+        public Vector2 GetMovement()
+        {
+            return controls.Player.Movement.ReadValue<Vector2>();
+        }
+
+        private void ClickPerformed(OnPress callback)
+        {
+            callback?.Invoke();
+        }
     }
 }

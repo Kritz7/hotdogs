@@ -2,23 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SoundManager : MonoSingleton<SoundManager>
+namespace HotDogs.HDSound
 {
-    [SerializeField] private SoundCatalogue InteractionCatalogue;
-
-    private AudioSource Source = null;
-
-    private void OnEnable()
+    public class SoundManager : MonoSingleton<SoundManager>
     {
-        Source ??= Camera.main.GetComponent<AudioSource>();
-    }
-    public static void PlayInteractionSFX()
-    {
-        Instance.Source.PlayOneShot(Instance.InteractionCatalogue.GetRandomClip);
-    }
+        [SerializeField] private SoundCatalogue InteractionCatalogue;
 
-    public void PlayRandomAudioFromCatalogue(SoundCatalogue catalogue)
-    {
-        Source.PlayOneShot(catalogue.GetRandomClip);
+        private AudioSource Source = null;
+
+        private void OnEnable()
+        {
+            Source ??= Camera.main.GetComponent<AudioSource>();
+        }
+        public static void PlayInteractionSFX()
+        {
+            Instance.Source.PlayOneShot(Instance.InteractionCatalogue.GetRandomClip);
+        }
+
+        public void PlayRandomAudioFromCatalogue(SoundCatalogue catalogue)
+        {
+            Source.PlayOneShot(catalogue.GetRandomClip);
+        }
     }
 }
